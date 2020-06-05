@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Bash script to make playing Sedtris more comfortable.
 # It presses "enter" automatically once in a second and after
-# every player's move. It also adds an invisible random input 
-# to improve randomness.
+# every player's move.
+#
+# It also creates a random seed for the internal PRNG to improve gameplay.
 #
 # Based on playsed.sh by Aurelio Marinho Jargas http://sed.sf.net/grabbag/scripts/playsed.sh.txt
 
@@ -11,6 +12,8 @@ mytime="`date +%s`"
 IFS=''
 CMD=''
 TMP=''
+
+cat /dev/urandom | tr -dc "01" | fold -w 18 | head -1 > seed.txt
 
 export LC_ALL="C"
 (while true;
@@ -35,15 +38,7 @@ do
   mytimenew="`date +%s`"
   if [ "$mytimenew" != "$mytime" ]
   then
-
-  	let "temp=($RANDOM/10)%7"
-	if [ $temp == 1 ]
-	then
-		#echo $temp
-		echo
-	else
-		echo
-	fi
+    echo
 	mytime=$mytimenew
   fi
-done) | sed -nf `dirname $0`/sedtris.sed
+done) | cat seed.txt - | sed -nf `dirname $0`/sedtris.sed
