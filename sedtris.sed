@@ -2,17 +2,7 @@
 # sedtris.sed - sed tetris
 # 26th of May, 2008
 # Julia Jomantaite <julia.jomantaite@gmail.com>
-
-# Usage examples:
-#  ./sedtris.sed
-#  ./sedtris.sh
-#  ./sedtris.internal-prng.sh
-#  cat seed.txt - | ./sedtris.sed
-#   where seed.txt contains a string of 0 and 1,
-#   e.g., echo 00000110000 > seed.txt
-:again
 1{
-/./! s/$/0001000/; h # Backup the seed.
 s/.*/ 2a2a2a2a|3a3a3a3a3a3a3a3a3a3a|2a2a2a2a~/
 s/[^~]*~$/&&&/
 s/.*/& 2a2a2a2a|0a0a0a0a0a0a0a0a0a0a|2a2a2a2a~/
@@ -28,17 +18,13 @@ s/$/#AAAA EDCA GPJA IMBA~/
 s/$/#ACIA EGME BDJB ACIA~/
 s/$/#AAAA IKEA FPFA BKCA~/
 s/$/#AAAA CGBA MPDA EJIA~/
-G; s/\
-\([01]*\)$/#\1~/ # Place the seed among other "variables."
 s/$/#NEXTAAAA ANAA LPOA AHAA 5~/
 s/$/#SCORE0~/
 h
 b display
 }
 
-brandom; :return; s/0// # Call the PRNG code.
-
-/1/{s/1//g;x;s/#\.\.*/&./;s/#\.\{8\}/#./;x;}
+/1/{s/1//;x;s/#\.\.*/&./;s/#\.\{8\}/#./;x;}
 
 /^w/b rotate
 /^a/b left
@@ -356,22 +342,3 @@ i\
 [2J[H
 p
 /GAME OVER!/q
-
-n; bagain
-
-:random # Rule 30 automaton (see github.com/Circiter/elementary-ca-in-sed).
-    g; s/^.*#\([01]*\)~.*$/\1/ # Get the old generation.
-    s/^\(.\)\(.*\)\(.\)$/>\3\1\2\3\1/
-    :update # Evolve according to rule 30.
-        s/$/\n000=0;001=1;010=1;011=1;100=1;101=0;110=0;111=0/
-        s/^\([^>]*\)>\(...\)\([^\n]*\n\).*\2=\(.\)/\1\4>\2\3/
-        s/\n.*$//; s/>./>/
-        />$/! bupdate
-    s/>//
-    # Save the new generation.
-    x; s/$/@/; G; s/#[01]*~\(.*\)@[^01]*\([01]*\)$/#\2~\1/; x
-    :center # Remove all but the central cell.
-        s/^.\(.\)/\1/;
-        s/\(.\).$/\1/
-        /../bcenter
-    breturn
